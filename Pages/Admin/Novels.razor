@@ -1,0 +1,69 @@
+﻿@page "/admin/novels"
+@page "/admin"
+@inherits OwningComponentBase<INovelStoreRepository>
+<table class="table table-sm table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên Tiểu Thuyết</th>
+            <th>Thể Loại</th>
+            <th>Giá Tiền</th>
+            <td />
+        </tr>
+    </thead>
+    <tbody>
+        @if (NovelData?.Count() > 0)
+        {
+            @foreach (Novel b in NovelData)
+            {
+                <tr>
+                    <td>@b.NovelId</td>
+                    <td>@b.Title</td>
+                    <td>@b.Genre</td>
+                    <td>@b.Price.ToString("c")</td>
+                    <td>
+                        <NavLink class="btn btn-info btn-sm"
+                                 href="@GetDetailsUrl(b.NovelId)">
+                            Chi Tiết
+                        </NavLink>
+                        <NavLink class="btn btn-warning btn-sm"
+                                 href="@GetEditUrl(b.NovelId)">
+                            Sửa
+                        </NavLink>
+                        <button class="btn btn-danger btn-sm"
+                                @onclick="@(e => DeleteNovel(b))">
+                            Xóa
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">No Novels</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<NavLink class="btn btn-primary" href="/admin/novels/create">Tạo</NavLink>
+@code {
+    public INovelStoreRepository Repository => Service;
+    public IEnumerable<Novel> NovelData { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        await UpdateData();
+    }
+    public async Task UpdateData()
+    {
+        NovelData = await Repository.Novels.ToListAsync();
+    }
+    public async Task DeleteNovel(Novel b)
+    {
+        Repository.DeleteNovel(b);
+        await UpdateData();
+    }
+
+    public string GetDetailsUrl(long id) => $"/admin/novels/details/{id}";
+    public string GetEditUrl(long id) => $"/admin/novels/edit/{id}";
+}

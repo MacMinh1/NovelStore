@@ -1,0 +1,77 @@
+﻿@page "/admin/novels/edit/{id:long}"
+@page "/admin/novels/create"
+@inherits OwningComponentBase<INovelStoreRepository>
+<style>
+    div.validation-message {
+        color: rgb(220, 53, 69);
+        font-weight: 500
+    }
+</style>
+<h3 class="bg-@ThemeColor text-white text-center p-1">@TitleText a Novel</h3>
+<EditForm Model="Novel" OnValidSubmit="SaveNovel">
+    <DataAnnotationsValidator />
+    @if (Novel.NovelId != 0)
+    {
+        <div class="form-group">
+            <label>ID</label>
+            <input class="form-control" disabled value="@Novel.NovelId" />
+        </div>
+    }
+    <div class="form-group">
+        <label>Title</label>
+        <ValidationMessage For="@(() => Novel.Title)" />
+        <InputText class="form-control" @bind-Value="Novel.Title" />
+    </div>
+    <div class="form-group">
+        <label>Author</label>
+        <ValidationMessage For="@(() => Novel.Author)" />
+        <InputText class="form-control" @bind-Value="Novel.Author" />
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <ValidationMessage For="@(() => Novel.Description)" />
+        <InputText class="form-control" @bind-Value="Novel.Description" />
+    </div>
+    <div class="form-group">
+        <label>Genre</label>
+        <ValidationMessage For="@(() => Novel.Genre)" />
+        <InputText class="form-control" @bind-Value="Novel.Genre" />
+    </div>
+    <div class="form-group">
+        <label>Price</label>
+        <ValidationMessage For="@(() => Novel.Price)" />
+        <InputNumber class="form-control" @bind-Value="Novel.Price" />
+    </div>
+    <button type="submit" class="btn btn-@ThemeColor">Lưu</button>
+    <NavLink class="btn btn-secondary"
+             href="/admin">Hủy</NavLink>
+</EditForm>
+@code {
+    public INovelStoreRepository Repository => Service;
+    [Inject]
+    public NavigationManager NavManager { get; set; }
+    [Parameter]
+    public long Id { get; set; } = 0;
+    public Novel Novel { get; set; } = new Novel();
+    protected override void OnParametersSet()
+    {
+        if (Id != 0)
+        {
+            Novel = Repository.Novels.FirstOrDefault(b => b.NovelId == Id);
+        }
+    }
+    public void SaveNovel()
+    {
+        if (Id == 0)
+        {
+            Repository.CreateNovel(Novel);
+        }
+        else
+        {
+            Repository.SaveNovel(Novel);
+        }
+        NavManager.NavigateTo("/admin/novels");
+    }
+    public string ThemeColor => Id == 0 ? "primary" : "warning";
+    public string TitleText => Id == 0 ? "Create" : "Edit";
+}
